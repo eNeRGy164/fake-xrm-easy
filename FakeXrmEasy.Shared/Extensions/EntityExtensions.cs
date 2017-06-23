@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Dynamic;
-using System.Linq.Expressions;
-using System.Text;
-using FakeXrmEasy.Metadata;
 using Microsoft.Xrm.Sdk;
 using Microsoft.Xrm.Sdk.Query;
 using FakeXrmEasy.OrganizationFaults;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
 
 namespace FakeXrmEasy.Extensions
 {
@@ -46,9 +43,23 @@ namespace FakeXrmEasy.Extensions
                 return;
             }
 
+            var request = new RetrieveEntityRequest
+            {
+                LogicalName = e.LogicalName,
+                EntityFilters = EntityFilters.Entity
+            };
+            var md = context.Service.Execute(request);
+
             var entityDateBehaviours = context.DateBehaviour[e.LogicalName];
             foreach (var attribute in entityDateBehaviours.Keys)
             {
+                //var request = new RetrieveAttributeRequest
+                //{
+                //    EntityLogicalName = e.LogicalName,
+                //    LogicalName = attribute
+                //};
+                //var md = context.Service.Execute(request);
+
                 if (!e.Attributes.ContainsKey(attribute))
                 {
                     continue;

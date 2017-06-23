@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using FakeXrmEasy.Metadata;
+using Microsoft.Xrm.Client.Services;
 
 namespace FakeXrmEasy
 {
@@ -60,6 +60,8 @@ namespace FakeXrmEasy
                 }
             };
 #endif
+
+            
         }
     }
 }

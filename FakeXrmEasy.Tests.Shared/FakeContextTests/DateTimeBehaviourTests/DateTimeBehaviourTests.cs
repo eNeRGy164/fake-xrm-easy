@@ -2,11 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using Crm;
-using FakeXrmEasy.Metadata;
 using Xunit;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Messages;
+using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Query;
 
+#if FAKE_XRM_EASY_2016 || FAKE_XRM_EASY_365
+using Microsoft.Xrm.Tooling.Connector;
+#endif
 namespace FakeXrmEasy.Tests.FakeContextTests
 {
     public class DateTimeBehaviourTests
@@ -53,7 +57,7 @@ namespace FakeXrmEasy.Tests.FakeContextTests
         [Fact]
         public void When_RetrieveMultiple_with_DateTime_Field_Behaviour_set_to_UserLocal_result_is_Time_Part_is_Kept()
         {
-            var ctx = new XrmFakedContext
+            var context = new XrmFakedContext
             {
                 DateBehaviour = new Dictionary<string, Dictionary<string, DateTimeAttributeBehavior>>
                 {
@@ -66,17 +70,19 @@ namespace FakeXrmEasy.Tests.FakeContextTests
                 }
             };
 
-            ctx.Initialize(new List<Entity>
-            {
-                new Contact
-                {
-                    Id = Guid.NewGuid(),
-                    ["createdon"] = new DateTime(2017, 1, 1, 1, 0, 0, DateTimeKind.Utc),
-                    BirthDate = new DateTime(2000, 1, 1, 23, 0, 0, DateTimeKind.Utc)
-                }
-            });
+            context.Initialize(new List<Entity>
+{
+    new Contact
+    {
+        Id = Guid.NewGuid(),
+        ["createdon"] = new DateTime(2017, 1, 1, 1, 0, 0, DateTimeKind.Utc),
+        BirthDate = new DateTime(2000, 1, 1, 23, 0, 0, DateTimeKind.Utc)
+    }
+});
+            //#if FAKE_XRM_EASY_2016 || FAKE_XRM_EASY_365
+            //            var context = new XrmRealContext(new CrmServiceClient("AuthType=Office365;Url=https://wncr-test.crm4.dynamics.com;Username=testadmin@wncr.nl;Password=P@ssw0rd"));
 
-            var service = ctx.GetFakedOrganizationService();
+            var service = context.GetFakedOrganizationService();
 
             var query = new QueryExpression(Contact.EntityLogicalName)
             {
@@ -85,8 +91,17 @@ namespace FakeXrmEasy.Tests.FakeContextTests
 
             var entity = service.RetrieveMultiple(query).Entities.Cast<Contact>().First();
 
+            //var request = new RetrieveEntityRequest
+            //{
+            //    LogicalName = Contact.EntityLogicalName,
+            //    EntityFilters = EntityFilters.Entity
+            //};
+            //var md = (RetrieveEntityResponse)service.Execute(request);
+            //var s = JsonConvert.SerializeObject(md.EntityMetadata, Formatting.Indented);
+
             Assert.Equal(new DateTime(2017, 1, 1, 1, 0, 0, DateTimeKind.Utc), entity.CreatedOn);
             Assert.Equal(new DateTime(2000, 1, 1, 23, 0, 0, DateTimeKind.Utc), entity.BirthDate);
+//#endif
         }
 
         [Fact]

@@ -3,7 +3,6 @@ using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Metadata;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 using Microsoft.Xrm.Sdk.Client;
 
@@ -92,43 +91,42 @@ namespace FakeXrmEasy.FakeMessageExecutors
                 throw new Exception("A logical name property must be specified in the request");
             }
 
-            if (req.EntityFilters == Microsoft.Xrm.Sdk.Metadata.EntityFilters.Entity ||
-                req.EntityFilters == Microsoft.Xrm.Sdk.Metadata.EntityFilters.Attributes)
+            if (req.EntityFilters == EntityFilters.Entity ||
+                req.EntityFilters == EntityFilters.Attributes)
             {
-                if(!FakeEntityMetadata.ContainsKey(req.LogicalName))
+                if (!ctx.entityMetadataStore.ContainsKey(req.LogicalName))
                 {
                     throw new Exception("The specified entity name wasn't found in the metadata cache");
                 }
 
                 //Find the reflected type in the proxy types assembly
-                var subClassType = GetEntityProxyType(req.LogicalName, ctx);
-
+                //var subClassType = GetEntityProxyType(req.LogicalName, ctx);
 
                 //Get that type properties
-                var attributes = subClassType
-                    .GetProperties()
-                    .Where(pi => pi.GetCustomAttributes(typeof(AttributeLogicalNameAttribute), true).Length > 0)
-                    .ToList();
+                //var attributes = subClassType
+                //    .GetProperties()
+                //    .Where(pi => pi.GetCustomAttributes(typeof(AttributeLogicalNameAttribute), true).Length > 0)
+                //    .ToList();
 
 
-                var computedAttributeMetadataList = new List<AttributeMetadata>();
+                //var computedAttributeMetadataList = new List<AttributeMetadata>();
 
-                foreach (var attr in attributes)
-                {
-                    var attrName = attr.Name;
-                    var attributeType = attr.PropertyType;
+                //foreach (var attr in attributes)
+                //{
+                //    var attrName = attr.Name;
+                //    var attributeType = attr.PropertyType;
 
-                    if (attr != null && attr.Name != null)
-                    {
-                        AttributeMetadata attrMetadata = GetAttributeMetadataFor(req.LogicalName, attrName.ToLower(), attributeType);
-                        computedAttributeMetadataList.Add(attrMetadata);
-                    }
-                }
+                //    if (attr != null && attr.Name != null)
+                //    {
+                //        AttributeMetadata attrMetadata = GetAttributeMetadataFor(req.LogicalName, attrName.ToLower(), attributeType);
+                //        computedAttributeMetadataList.Add(attrMetadata);
+                //    }
+                //}
 
-                var entityMetadata = FakeEntityMetadata[req.LogicalName];
+                //var entityMetadata = FakeEntityMetadata[req.LogicalName];
 
-                //AttributeMetadata is internal set in a sealed class so... just doing this
-                entityMetadata.GetType().GetProperty("Attributes").SetValue(entityMetadata, computedAttributeMetadataList.ToArray(), null);
+                ////AttributeMetadata is internal set in a sealed class so... just doing this
+                //entityMetadata.GetType().GetProperty("Attributes").SetValue(entityMetadata, computedAttributeMetadataList.ToArray(), null);
 
 
                 //entityMetadata["AttributeMetadata"] = computedAttributeMetadataList.ToArray();
@@ -137,7 +135,7 @@ namespace FakeXrmEasy.FakeMessageExecutors
                 {
                     Results = new ParameterCollection
                         {
-                            { "EntityMetadata", entityMetadata }
+                            { "EntityMetadata", ctx.entityMetadataStore[req.LogicalName] }
                         }
                 };
 
