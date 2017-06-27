@@ -8,7 +8,7 @@ using Microsoft.Xrm.Sdk.Metadata;
 
 namespace FakeXrmEasy.Metadata
 {
-    internal class MetadataStore : Dictionary<string, EntityMetadata>
+    internal class MetadataLayer : Dictionary<string, EntityMetadata>
     {
         private static bool initializedFromAssembly = false;
 
